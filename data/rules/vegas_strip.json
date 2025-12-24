@@ -1,0 +1,20 @@
+{
+  "name": "Vegas Strip Standard",
+  "rule_set_id": "s17_das",
+  "num_decks": 6,
+  "penetration": 0.75,
+  "dealer_stands_soft_17": true,
+  "dealer_peeks_for_blackjack": true,
+  "double_after_split": true,
+  "resplit_aces": false,
+  "hit_split_aces": false,
+  "max_splits": 3,
+  "surrender_allowed": true,
+  "early_surrender": false,
+  "double_any_two": true,
+  "double_9_10_11_only": false,
+  "double_10_11_only": false,
+  "blackjack_pays": 1.5,
+  "table_min": 10.0,
+  "table_max": 1000.0
+}

@@ -1,0 +1,5 @@
+# Core dependencies
+pytest>=9.0.0
+
+# No other external dependencies required - pure Python implementation
+# The engine uses only Python standard library for core functionality

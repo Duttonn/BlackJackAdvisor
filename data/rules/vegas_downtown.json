@@ -1,0 +1,20 @@
+{
+  "name": "Vegas Downtown",
+  "rule_set_id": "h17_das",
+  "num_decks": 2,
+  "penetration": 0.65,
+  "dealer_stands_soft_17": false,
+  "dealer_peeks_for_blackjack": true,
+  "double_after_split": true,
+  "resplit_aces": false,
+  "hit_split_aces": false,
+  "max_splits": 3,
+  "surrender_allowed": false,
+  "early_surrender": false,
+  "double_any_two": true,
+  "double_9_10_11_only": false,
+  "double_10_11_only": false,
+  "blackjack_pays": 1.5,
+  "table_min": 5.0,
+  "table_max": 500.0
+}
