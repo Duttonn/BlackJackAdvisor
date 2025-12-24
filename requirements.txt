@@ -1,5 +1,10 @@
 # Core dependencies
 pytest>=9.0.0
 
+# Web API
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+pydantic>=2.5.0
+
 # No other external dependencies required - pure Python implementation
 # The engine uses only Python standard library for core functionality
