@@ -2,7 +2,11 @@
   {
     "id": "ILL_16v10",
     "description": "Stand on 16 vs 10 at TC >= 0",
-    "trigger": { "type": "HARD", "value": 16, "dealer": 10 },
+    "trigger": {
+      "type": "HARD",
+      "value": 16,
+      "dealer": 10
+    },
     "rule": {
       "threshold": 0,
       "direction": "ABOVE_OR_EQUAL",
@@ -13,7 +17,11 @@
   {
     "id": "ILL_15v10",
     "description": "Stand on 15 vs 10 at TC >= +4",
-    "trigger": { "type": "HARD", "value": 15, "dealer": 10 },
+    "trigger": {
+      "type": "HARD",
+      "value": 15,
+      "dealer": 10
+    },
     "rule": {
       "threshold": 4,
       "direction": "ABOVE_OR_EQUAL",
@@ -24,7 +32,11 @@
   {
     "id": "ILL_10vT",
     "description": "Double 10 vs 10 at TC >= +4",
-    "trigger": { "type": "HARD", "value": 10, "dealer": 10 },
+    "trigger": {
+      "type": "HARD",
+      "value": 10,
+      "dealer": 10
+    },
     "rule": {
       "threshold": 4,
       "direction": "ABOVE_OR_EQUAL",
@@ -35,7 +47,11 @@
   {
     "id": "ILL_12v3",
     "description": "Stand on 12 vs 3 at TC >= +2",
-    "trigger": { "type": "HARD", "value": 12, "dealer": 3 },
+    "trigger": {
+      "type": "HARD",
+      "value": 12,
+      "dealer": 3
+    },
     "rule": {
       "threshold": 2,
       "direction": "ABOVE_OR_EQUAL",
@@ -46,7 +62,11 @@
   {
     "id": "ILL_12v2",
     "description": "Stand on 12 vs 2 at TC >= +3",
-    "trigger": { "type": "HARD", "value": 12, "dealer": 2 },
+    "trigger": {
+      "type": "HARD",
+      "value": 12,
+      "dealer": 2
+    },
     "rule": {
       "threshold": 3,
       "direction": "ABOVE_OR_EQUAL",
@@ -57,7 +77,11 @@
   {
     "id": "ILL_11vA",
     "description": "Double 11 vs A at TC >= +1",
-    "trigger": { "type": "HARD", "value": 11, "dealer": 11 },
+    "trigger": {
+      "type": "HARD",
+      "value": 11,
+      "dealer": 11
+    },
     "rule": {
       "threshold": 1,
       "direction": "ABOVE_OR_EQUAL",
@@ -68,7 +92,11 @@
   {
     "id": "ILL_9v2",
     "description": "Double 9 vs 2 at TC >= +1",
-    "trigger": { "type": "HARD", "value": 9, "dealer": 2 },
+    "trigger": {
+      "type": "HARD",
+      "value": 9,
+      "dealer": 2
+    },
     "rule": {
       "threshold": 1,
       "direction": "ABOVE_OR_EQUAL",
@@ -79,7 +107,11 @@
   {
     "id": "ILL_10vA",
     "description": "Double 10 vs A at TC >= +4",
-    "trigger": { "type": "HARD", "value": 10, "dealer": 11 },
+    "trigger": {
+      "type": "HARD",
+      "value": 10,
+      "dealer": 11
+    },
     "rule": {
       "threshold": 4,
       "direction": "ABOVE_OR_EQUAL",
@@ -90,7 +122,11 @@
   {
     "id": "ILL_9v7",
     "description": "Double 9 vs 7 at TC >= +3",
-    "trigger": { "type": "HARD", "value": 9, "dealer": 7 },
+    "trigger": {
+      "type": "HARD",
+      "value": 9,
+      "dealer": 7
+    },
     "rule": {
       "threshold": 3,
       "direction": "ABOVE_OR_EQUAL",
@@ -101,7 +137,11 @@
   {
     "id": "ILL_16v9",
     "description": "Stand on 16 vs 9 at TC >= +5",
-    "trigger": { "type": "HARD", "value": 16, "dealer": 9 },
+    "trigger": {
+      "type": "HARD",
+      "value": 16,
+      "dealer": 9
+    },
     "rule": {
       "threshold": 5,
       "direction": "ABOVE_OR_EQUAL",
@@ -112,7 +152,11 @@
   {
     "id": "ILL_13v2",
     "description": "Hit 13 vs 2 at TC < -1",
-    "trigger": { "type": "HARD", "value": 13, "dealer": 2 },
+    "trigger": {
+      "type": "HARD",
+      "value": 13,
+      "dealer": 2
+    },
     "rule": {
       "threshold": -1,
       "direction": "BELOW",
@@ -123,7 +167,11 @@
   {
     "id": "ILL_12v4",
     "description": "Hit 12 vs 4 at TC < 0",
-    "trigger": { "type": "HARD", "value": 12, "dealer": 4 },
+    "trigger": {
+      "type": "HARD",
+      "value": 12,
+      "dealer": 4
+    },
     "rule": {
       "threshold": 0,
       "direction": "BELOW",
@@ -134,7 +182,11 @@
   {
     "id": "ILL_12v5",
     "description": "Hit 12 vs 5 at TC < -2",
-    "trigger": { "type": "HARD", "value": 12, "dealer": 5 },
+    "trigger": {
+      "type": "HARD",
+      "value": 12,
+      "dealer": 5
+    },
     "rule": {
       "threshold": -2,
       "direction": "BELOW",
@@ -145,7 +197,11 @@
   {
     "id": "ILL_12v6",
     "description": "Hit 12 vs 6 at TC < -1",
-    "trigger": { "type": "HARD", "value": 12, "dealer": 6 },
+    "trigger": {
+      "type": "HARD",
+      "value": 12,
+      "dealer": 6
+    },
     "rule": {
       "threshold": -1,
       "direction": "BELOW",
@@ -156,7 +212,11 @@
   {
     "id": "ILL_13v3",
     "description": "Hit 13 vs 3 at TC < -2",
-    "trigger": { "type": "HARD", "value": 13, "dealer": 3 },
+    "trigger": {
+      "type": "HARD",
+      "value": 13,
+      "dealer": 3
+    },
     "rule": {
       "threshold": -2,
       "direction": "BELOW",
@@ -167,7 +227,11 @@
   {
     "id": "ILL_TT_v5",
     "description": "Split 10s vs 5 at TC >= +5",
-    "trigger": { "type": "PAIR", "value": 10, "dealer": 5 },
+    "trigger": {
+      "type": "PAIR",
+      "value": 10,
+      "dealer": 5
+    },
     "rule": {
       "threshold": 5,
       "direction": "ABOVE_OR_EQUAL",
@@ -178,7 +242,11 @@
   {
     "id": "ILL_TT_v6",
     "description": "Split 10s vs 6 at TC >= +4",
-    "trigger": { "type": "PAIR", "value": 10, "dealer": 6 },
+    "trigger": {
+      "type": "PAIR",
+      "value": 10,
+      "dealer": 6
+    },
     "rule": {
       "threshold": 4,
       "direction": "ABOVE_OR_EQUAL",
@@ -189,7 +257,11 @@
   {
     "id": "ILL_INSURANCE",
     "description": "Take Insurance at TC >= +3 (handled separately)",
-    "trigger": { "type": "HARD", "value": 0, "dealer": 11 },
+    "trigger": {
+      "type": "HARD",
+      "value": 0,
+      "dealer": 11
+    },
     "rule": {
       "threshold": 3,
       "direction": "ABOVE_OR_EQUAL",
@@ -200,7 +272,11 @@
   {
     "id": "FAB_15v10",
     "description": "Surrender 15 vs 10 at TC >= 0",
-    "trigger": { "type": "HARD", "value": 15, "dealer": 10 },
+    "trigger": {
+      "type": "HARD",
+      "value": 15,
+      "dealer": 10
+    },
     "rule": {
       "threshold": 0,
       "direction": "ABOVE_OR_EQUAL",
@@ -211,7 +287,11 @@
   {
     "id": "FAB_15vA",
     "description": "Surrender 15 vs A at TC >= +1",
-    "trigger": { "type": "HARD", "value": 15, "dealer": 11 },
+    "trigger": {
+      "type": "HARD",
+      "value": 15,
+      "dealer": 11
+    },
     "rule": {
       "threshold": 1,
       "direction": "ABOVE_OR_EQUAL",
@@ -222,7 +302,11 @@
   {
     "id": "FAB_14v10",
     "description": "Surrender 14 vs 10 at TC >= +3",
-    "trigger": { "type": "HARD", "value": 14, "dealer": 10 },
+    "trigger": {
+      "type": "HARD",
+      "value": 14,
+      "dealer": 10
+    },
     "rule": {
       "threshold": 3,
       "direction": "ABOVE_OR_EQUAL",
@@ -233,7 +317,11 @@
   {
     "id": "FAB_15v9",
     "description": "Surrender 15 vs 9 at TC >= +2",
-    "trigger": { "type": "HARD", "value": 15, "dealer": 9 },
+    "trigger": {
+      "type": "HARD",
+      "value": 15,
+      "dealer": 9
+    },
     "rule": {
       "threshold": 2,
       "direction": "ABOVE_OR_EQUAL",
