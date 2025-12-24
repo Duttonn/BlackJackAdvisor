@@ -1,21 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '../context/GameContext';
-import { healthCheck } from '../lib/api';
 import {
-    Spade,
-    Target,
+    Gamepad2,
     Eye,
     DollarSign,
-    Wifi,
-    WifiOff,
-    ArrowRight,
-    Info,
     Sparkles,
+    TrendingUp,
+    Target,
+    Zap,
+    ArrowRight,
 } from 'lucide-react';
 
 /**
- * Home page - Mode selection and game initialization
+ * Home page - Game mode selection with Rainbet-style game cards
  */
 export function Home() {
     const navigate = useNavigate();
@@ -23,26 +21,7 @@ export function Home() {
 
     const [selectedMode, setSelectedMode] = useState<'AUTO' | 'MANUAL' | null>(null);
     const [bankroll, setBankroll] = useState('1000');
-    const [isConnected, setIsConnected] = useState<boolean | null>(null);
     const [isStarting, setIsStarting] = useState(false);
-
-    // Check API connection on mount
-    useEffect(() => {
-        const checkConnection = async () => {
-            try {
-                await healthCheck();
-                setIsConnected(true);
-            } catch {
-                setIsConnected(false);
-            }
-        };
-
-        checkConnection();
-
-        // Re-check every 5 seconds
-        const interval = setInterval(checkConnection, 5000);
-        return () => clearInterval(interval);
-    }, []);
 
     // Handle game start
     const handleStart = async () => {
@@ -52,7 +31,6 @@ export function Home() {
         await startGame(selectedMode, parseFloat(bankroll));
         setIsStarting(false);
 
-        // Navigate to appropriate page
         if (selectedMode === 'AUTO') {
             navigate('/training');
         } else {
@@ -60,274 +38,277 @@ export function Home() {
         }
     };
 
-    return (
-        <div className="min-h-screen bg-[var(--color-background)] flex flex-col">
-            {/* Header */}
-            <header className="border-b border-[var(--color-border)] py-6">
-                <div className="container mx-auto px-6">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-emerald-500/20 rounded-lg">
-                                <Spade className="w-8 h-8 text-emerald-400" />
-                            </div>
-                            <div>
-                                <h1 className="text-2xl font-bold gradient-text">Blackjack Advisor</h1>
-                                <p className="text-sm text-gray-500">Real-Time Decision Engine</p>
-                            </div>
-                        </div>
+    // Quick start with preset mode
+    const handleQuickStart = async (mode: 'AUTO' | 'MANUAL') => {
+        setIsStarting(true);
+        await startGame(mode, parseFloat(bankroll) || 1000);
+        setIsStarting(false);
+        navigate(mode === 'AUTO' ? '/training' : '/shadowing');
+    };
 
-                        {/* Connection status */}
-                        <div className={`
-              flex items-center gap-2 px-3 py-1.5 rounded-full text-sm
-              ${isConnected === true
-                                ? 'bg-emerald-500/20 text-emerald-400'
-                                : isConnected === false
-                                    ? 'bg-red-500/20 text-red-400'
-                                    : 'bg-gray-500/20 text-gray-400'
-                            }
-            `}>
-                            {isConnected === true ? (
-                                <>
-                                    <Wifi className="w-4 h-4" />
-                                    <span>API Connected</span>
-                                </>
-                            ) : isConnected === false ? (
-                                <>
-                                    <WifiOff className="w-4 h-4" />
-                                    <span>API Offline</span>
-                                </>
-                            ) : (
-                                <>
-                                    <Wifi className="w-4 h-4 animate-pulse" />
-                                    <span>Connecting...</span>
-                                </>
-                            )}
-                        </div>
+    return (
+        <div className="max-w-6xl mx-auto">
+            {/* Page Header */}
+            <div className="mb-8">
+                <h1 className="text-3xl font-bold text-[var(--rb-text)] mb-2">
+                    Welcome to Blackjack Advisor
+                </h1>
+                <p className="text-[var(--rb-text-muted)]">
+                    Select a game mode to start practicing perfect blackjack strategy
+                </p>
+            </div>
+
+            {/* Featured Games Grid */}
+            <div className="mb-8">
+                <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-lg font-semibold text-[var(--rb-text-secondary)]">
+                        Game Modes
+                    </h2>
+                    <div className="flex items-center gap-2 text-sm text-[var(--rb-text-muted)]">
+                        <Sparkles className="w-4 h-4 text-[var(--rb-amber)]" />
+                        <span>Recommended for you</span>
                     </div>
                 </div>
-            </header>
 
-            {/* Main content */}
-            <main className="flex-1 container mx-auto px-6 py-12">
-                <div className="max-w-4xl mx-auto">
-                    {/* Welcome section */}
-                    <div className="text-center mb-12">
-                        <h2 className="text-4xl font-bold text-white mb-4">
-                            Master the <span className="gradient-text">Art of Counting</span>
-                        </h2>
-                        <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-                            Train your decision-making with our AI-powered engine featuring Hi-Lo counting,
-                            Illustrious 18 deviations, and Half-Kelly betting recommendations.
-                        </p>
-                    </div>
+                <div className="grid md:grid-cols-2 gap-6">
+                    {/* Training Mode Card */}
+                    <button
+                        onClick={() => setSelectedMode('AUTO')}
+                        className={`game-card text-left ${selectedMode === 'AUTO'
+                                ? 'ring-2 ring-[var(--rb-primary)] border-[var(--rb-primary)]/30'
+                                : ''
+                            }`}
+                    >
+                        <div className="game-card-image bg-gradient-to-br from-[#0066b8] to-[#003d6d]">
+                            <div className="flex flex-col items-center">
+                                <div className="w-20 h-20 rounded-2xl bg-white/10 flex items-center justify-center mb-3">
+                                    <Gamepad2 className="w-10 h-10 text-white" />
+                                </div>
+                                <div className="flex gap-1">
+                                    {['♠', '♥', '♦', '♣'].map((suit, i) => (
+                                        <span
+                                            key={i}
+                                            className={`text-2xl ${suit === '♥' || suit === '♦' ? 'text-red-400' : 'text-white'
+                                                }`}
+                                        >
+                                            {suit}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                        <div className="game-card-content">
+                            <div className="flex items-center justify-between mb-2">
+                                <h3 className="game-card-title">Training Mode</h3>
+                                <span className="rb-badge rb-badge-primary">AUTO</span>
+                            </div>
+                            <p className="game-card-subtitle mb-3">
+                                Practice with simulated hands from a virtual 6-deck shoe
+                            </p>
+                            <div className="flex items-center gap-4 text-xs text-[var(--rb-text-muted)]">
+                                <span className="flex items-center gap-1">
+                                    <Target className="w-3 h-3" />
+                                    Decision Feedback
+                                </span>
+                                <span className="flex items-center gap-1">
+                                    <TrendingUp className="w-3 h-3" />
+                                    Track Accuracy
+                                </span>
+                            </div>
+                        </div>
+                    </button>
 
-                    {/* Mode selection */}
-                    <div className="grid md:grid-cols-2 gap-6 mb-8">
-                        {/* AUTO Mode */}
-                        <button
-                            onClick={() => setSelectedMode('AUTO')}
-                            className={`
-                relative overflow-hidden surface-elevated p-6 text-left
-                transition-all duration-300 cursor-pointer group
-                ${selectedMode === 'AUTO'
-                                    ? 'ring-2 ring-emerald-500 border-emerald-500/50'
-                                    : 'hover:border-gray-600'
-                                }
-              `}
-                        >
-                            {/* Glow effect when selected */}
-                            {selectedMode === 'AUTO' && (
-                                <div className="absolute inset-0 bg-emerald-500/5 pointer-events-none" />
-                            )}
-
-                            <div className="relative z-10">
-                                <div className="flex items-start gap-4 mb-4">
-                                    <div className={`
-                    p-3 rounded-xl
-                    ${selectedMode === 'AUTO'
-                                            ? 'bg-emerald-500/20 text-emerald-400'
-                                            : 'bg-gray-700 text-gray-400 group-hover:text-emerald-400'
-                                        }
-                    transition-colors
-                  `}>
-                                        <Target className="w-8 h-8" />
+                    {/* Shadow Mode Card */}
+                    <button
+                        onClick={() => setSelectedMode('MANUAL')}
+                        className={`game-card text-left ${selectedMode === 'MANUAL'
+                                ? 'ring-2 ring-[var(--rb-green)] border-[var(--rb-green)]/30'
+                                : ''
+                            }`}
+                    >
+                        <div className="game-card-image bg-gradient-to-br from-[#1a7a3a] to-[#0d4f22]">
+                            <div className="flex flex-col items-center">
+                                <div className="w-20 h-20 rounded-2xl bg-white/10 flex items-center justify-center mb-3">
+                                    <Eye className="w-10 h-10 text-white" />
+                                </div>
+                                <div className="flex gap-2">
+                                    <div className="px-3 py-1 rounded-full bg-white/10 text-xs text-white">
+                                        Live Count
                                     </div>
-                                    <div>
-                                        <h3 className="text-xl font-bold text-white mb-1 flex items-center gap-2">
-                                            Training Mode
-                                            <span className="badge badge-primary text-xs">AUTO</span>
-                                        </h3>
-                                        <p className="text-gray-400 text-sm">
-                                            Practice perfect strategy with simulated hands
-                                        </p>
+                                    <div className="px-3 py-1 rounded-full bg-white/10 text-xs text-white">
+                                        Real-Time
                                     </div>
                                 </div>
-
-                                <ul className="space-y-2 text-sm text-gray-400">
-                                    <li className="flex items-center gap-2">
-                                        <Sparkles className="w-4 h-4 text-amber-400" />
-                                        Engine deals from virtual 6-deck shoe
-                                    </li>
-                                    <li className="flex items-center gap-2">
-                                        <Sparkles className="w-4 h-4 text-amber-400" />
-                                        Get instant feedback on every decision
-                                    </li>
-                                    <li className="flex items-center gap-2">
-                                        <Sparkles className="w-4 h-4 text-amber-400" />
-                                        Track accuracy and improve over time
-                                    </li>
-                                </ul>
                             </div>
-                        </button>
-
-                        {/* MANUAL Mode */}
-                        <button
-                            onClick={() => setSelectedMode('MANUAL')}
-                            className={`
-                relative overflow-hidden surface-elevated p-6 text-left
-                transition-all duration-300 cursor-pointer group
-                ${selectedMode === 'MANUAL'
-                                    ? 'ring-2 ring-indigo-500 border-indigo-500/50'
-                                    : 'hover:border-gray-600'
-                                }
-              `}
-                        >
-                            {/* Glow effect when selected */}
-                            {selectedMode === 'MANUAL' && (
-                                <div className="absolute inset-0 bg-indigo-500/5 pointer-events-none" />
-                            )}
-
-                            <div className="relative z-10">
-                                <div className="flex items-start gap-4 mb-4">
-                                    <div className={`
-                    p-3 rounded-xl
-                    ${selectedMode === 'MANUAL'
-                                            ? 'bg-indigo-500/20 text-indigo-400'
-                                            : 'bg-gray-700 text-gray-400 group-hover:text-indigo-400'
-                                        }
-                    transition-colors
-                  `}>
-                                        <Eye className="w-8 h-8" />
-                                    </div>
-                                    <div>
-                                        <h3 className="text-xl font-bold text-white mb-1 flex items-center gap-2">
-                                            Shadow Mode
-                                            <span className="badge badge-accent text-xs">MANUAL</span>
-                                        </h3>
-                                        <p className="text-gray-400 text-sm">
-                                            Real-time advice for live casino play
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <ul className="space-y-2 text-sm text-gray-400">
-                                    <li className="flex items-center gap-2">
-                                        <Sparkles className="w-4 h-4 text-amber-400" />
-                                        Input cards as you observe them
-                                    </li>
-                                    <li className="flex items-center gap-2">
-                                        <Sparkles className="w-4 h-4 text-amber-400" />
-                                        Get running & true count in real-time
-                                    </li>
-                                    <li className="flex items-center gap-2">
-                                        <Sparkles className="w-4 h-4 text-amber-400" />
-                                        Receive optimal action recommendations
-                                    </li>
-                                </ul>
+                        </div>
+                        <div className="game-card-content">
+                            <div className="flex items-center justify-between mb-2">
+                                <h3 className="game-card-title">Shadow Mode</h3>
+                                <span className="rb-badge rb-badge-green">MANUAL</span>
                             </div>
-                        </button>
-                    </div>
+                            <p className="game-card-subtitle mb-3">
+                                Input cards from live play and get real-time recommendations
+                            </p>
+                            <div className="flex items-center gap-4 text-xs text-[var(--rb-text-muted)]">
+                                <span className="flex items-center gap-1">
+                                    <Zap className="w-3 h-3" />
+                                    Live Counting
+                                </span>
+                                <span className="flex items-center gap-1">
+                                    <Eye className="w-3 h-3" />
+                                    Casino Ready
+                                </span>
+                            </div>
+                        </div>
+                    </button>
+                </div>
+            </div>
 
-                    {/* Bankroll input */}
-                    <div className="surface-elevated p-6 mb-8">
-                        <label className="block text-sm font-semibold text-gray-400 uppercase tracking-wider mb-2">
-                            <DollarSign className="w-4 h-4 inline mr-1" />
+            {/* Configuration Panel */}
+            <div className="rb-surface p-6 mb-8">
+                <h3 className="text-lg font-semibold text-[var(--rb-text)] mb-4 flex items-center gap-2">
+                    <DollarSign className="w-5 h-5 text-[var(--rb-green)]" />
+                    Session Configuration
+                </h3>
+
+                <div className="grid md:grid-cols-2 gap-6">
+                    {/* Bankroll Input */}
+                    <div>
+                        <label className="block text-sm font-medium text-[var(--rb-text-secondary)] mb-2">
                             Starting Bankroll
                         </label>
                         <div className="relative">
-                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg">$</span>
+                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--rb-text-muted)]">
+                                $
+                            </span>
                             <input
                                 type="number"
                                 value={bankroll}
                                 onChange={(e) => setBankroll(e.target.value)}
                                 min="100"
                                 step="100"
-                                className="input pl-8 text-2xl font-bold"
+                                className="rb-input pl-8 text-xl font-bold"
                                 placeholder="1000"
                             />
                         </div>
-                        <p className="mt-2 text-sm text-gray-500">
+                        <p className="mt-2 text-xs text-[var(--rb-text-muted)]">
                             Used for Half-Kelly bet sizing recommendations
                         </p>
                     </div>
 
-                    {/* Start button */}
-                    <button
-                        onClick={handleStart}
-                        disabled={!selectedMode || !bankroll || !isConnected || isStarting}
-                        className={`
-              w-full flex items-center justify-center gap-3
-              px-8 py-5 rounded-xl
-              text-lg font-bold uppercase tracking-wider
-              transition-all duration-300
-              ${selectedMode
-                                ? selectedMode === 'AUTO'
-                                    ? 'btn-primary'
-                                    : 'btn-accent'
-                                : 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                            }
-            `}
-                    >
-                        {isStarting ? (
-                            <>
-                                <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                Starting Session...
-                            </>
-                        ) : (
-                            <>
-                                Start {selectedMode === 'AUTO' ? 'Training' : selectedMode === 'MANUAL' ? 'Shadowing' : 'Session'}
-                                <ArrowRight className="w-6 h-6" />
-                            </>
-                        )}
-                    </button>
-
-                    {/* Error display */}
-                    {state.error && (
-                        <div className="mt-4 p-4 bg-red-500/20 border border-red-500/50 rounded-lg text-red-300">
-                            {state.error}
-                        </div>
-                    )}
-
-                    {/* Info box */}
-                    <div className="mt-8 p-6 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl">
-                        <h4 className="font-semibold text-white mb-3 flex items-center gap-2">
-                            <Info className="w-5 h-5 text-blue-400" />
-                            Strategy Information
-                        </h4>
-                        <div className="grid md:grid-cols-2 gap-4 text-sm text-gray-400">
-                            <div>
-                                <strong className="text-gray-300">Counting System:</strong> Hi-Lo
-                            </div>
-                            <div>
-                                <strong className="text-gray-300">Bet Sizing:</strong> Half-Kelly (0.5×)
-                            </div>
-                            <div>
-                                <strong className="text-gray-300">Index Play:</strong> Illustrious 18 + Fab 4
-                            </div>
-                            <div>
-                                <strong className="text-gray-300">Wong Out:</strong> True Count &lt; -1.0
-                            </div>
+                    {/* Mode Selection Summary */}
+                    <div>
+                        <label className="block text-sm font-medium text-[var(--rb-text-secondary)] mb-2">
+                            Selected Mode
+                        </label>
+                        <div className="h-[52px] flex items-center px-4 rounded-lg bg-[var(--rb-bg)] border border-[var(--rb-border)]">
+                            {selectedMode ? (
+                                <div className="flex items-center gap-3">
+                                    {selectedMode === 'AUTO' ? (
+                                        <Gamepad2 className="w-5 h-5 text-[var(--rb-primary)]" />
+                                    ) : (
+                                        <Eye className="w-5 h-5 text-[var(--rb-green)]" />
+                                    )}
+                                    <span className="font-semibold">
+                                        {selectedMode === 'AUTO' ? 'Training Mode' : 'Shadow Mode'}
+                                    </span>
+                                    <span
+                                        className={`rb-badge ${selectedMode === 'AUTO' ? 'rb-badge-primary' : 'rb-badge-green'
+                                            }`}
+                                    >
+                                        {selectedMode}
+                                    </span>
+                                </div>
+                            ) : (
+                                <span className="text-[var(--rb-text-muted)]">
+                                    Click a game mode above to select
+                                </span>
+                            )}
                         </div>
                     </div>
                 </div>
-            </main>
 
-            {/* Footer */}
-            <footer className="border-t border-[var(--color-border)] py-4">
-                <div className="container mx-auto px-6 text-center text-sm text-gray-500">
-                    For educational purposes only. Please gamble responsibly.
+                {/* Start Button */}
+                <button
+                    onClick={handleStart}
+                    disabled={!selectedMode || !bankroll || isStarting}
+                    className={`
+            w-full mt-6 rb-btn text-lg py-4
+            ${selectedMode === 'AUTO'
+                            ? 'rb-btn-primary'
+                            : selectedMode === 'MANUAL'
+                                ? 'rb-btn-green'
+                                : 'bg-[var(--rb-surface-hover)] text-[var(--rb-text-muted)] cursor-not-allowed'
+                        }
+          `}
+                >
+                    {isStarting ? (
+                        <>
+                            <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                            Starting Session...
+                        </>
+                    ) : (
+                        <>
+                            Start{' '}
+                            {selectedMode === 'AUTO'
+                                ? 'Training'
+                                : selectedMode === 'MANUAL'
+                                    ? 'Shadowing'
+                                    : 'Session'}
+                            <ArrowRight className="w-5 h-5" />
+                        </>
+                    )}
+                </button>
+
+                {/* Error display */}
+                {state.error && (
+                    <div className="mt-4 p-4 rounded-lg bg-[var(--rb-red)]/10 border border-[var(--rb-red)]/30 text-[var(--rb-red)]">
+                        {state.error}
+                    </div>
+                )}
+            </div>
+
+            {/* Quick Start Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4">
+                <button
+                    onClick={() => handleQuickStart('AUTO')}
+                    disabled={isStarting}
+                    className="flex-1 rb-btn rb-btn-outline py-3"
+                >
+                    <Zap className="w-4 h-4" />
+                    Quick Start: Training
+                </button>
+                <button
+                    onClick={() => handleQuickStart('MANUAL')}
+                    disabled={isStarting}
+                    className="flex-1 rb-btn rb-btn-outline py-3"
+                >
+                    <Zap className="w-4 h-4" />
+                    Quick Start: Shadowing
+                </button>
+            </div>
+
+            {/* Strategy Info */}
+            <div className="mt-8 rb-surface p-6">
+                <h4 className="font-semibold text-[var(--rb-text)] mb-4">
+                    Strategy Configuration
+                </h4>
+                <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
+                    {[
+                        { label: 'Counting System', value: 'Hi-Lo' },
+                        { label: 'Bet Sizing', value: 'Half-Kelly (0.5×)' },
+                        { label: 'Index Play', value: 'Illustrious 18 + Fab 4' },
+                        { label: 'Wong Out', value: 'TC < -1.0' },
+                    ].map((item, i) => (
+                        <div key={i} className="text-center p-4 rounded-lg bg-[var(--rb-bg)]">
+                            <div className="text-[var(--rb-text-muted)] text-xs uppercase tracking-wider mb-1">
+                                {item.label}
+                            </div>
+                            <div className="font-semibold text-[var(--rb-text)]">{item.value}</div>
+                        </div>
+                    ))}
                 </div>
-            </footer>
+            </div>
         </div>
     );
 }

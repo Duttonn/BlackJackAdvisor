@@ -19,8 +19,10 @@ export function Card({
     className = '',
     animate = false,
 }: CardProps) {
-    // Parse card string - format is like "A♥" or "Ah" or "A♥"
-    const parseCard = (cardStr: string): { rank: string; suit: string; isRed: boolean } => {
+    // Parse card string
+    const parseCard = (
+        cardStr: string
+    ): { rank: string; suit: string; isRed: boolean } => {
         if (!cardStr || cardStr.length < 2) {
             return { rank: '?', suit: '?', isRed: false };
         }
@@ -28,7 +30,6 @@ export function Card({
         const rank = cardStr.charAt(0).toUpperCase();
         const suitChar = cardStr.charAt(1).toLowerCase();
 
-        // Convert suit notation
         let suit: string;
         let isRed: boolean;
 
@@ -58,54 +59,37 @@ export function Card({
                 isRed = false;
         }
 
-        // Convert T to 10 for display
         const displayRank = rank === 'T' ? '10' : rank;
-
         return { rank: displayRank, suit, isRed };
     };
 
     const { rank, suit, isRed } = parseCard(card);
 
-    // Size classes
-    const sizeStyles = {
-        sm: {
-            width: 'w-12',
-            height: 'h-[68px]',
-            fontSize: 'text-sm',
-            padding: 'p-1',
-        },
-        md: {
-            width: 'w-[70px]',
-            height: 'h-[100px]',
-            fontSize: 'text-lg',
-            padding: 'p-2',
-        },
-        lg: {
-            width: 'w-[90px]',
-            height: 'h-[130px]',
-            fontSize: 'text-2xl',
-            padding: 'p-3',
-        },
+    // Size configs
+    const sizes = {
+        sm: { w: 'w-12', h: 'h-[68px]', text: 'text-xs', center: 'text-xl', p: 'p-1' },
+        md: { w: 'w-[70px]', h: 'h-[98px]', text: 'text-sm', center: 'text-2xl', p: 'p-1.5' },
+        lg: { w: 'w-[80px]', h: 'h-[112px]', text: 'text-base', center: 'text-3xl', p: 'p-2' },
     };
 
-    const currentSize = sizeStyles[size];
+    const s = sizes[size];
 
     if (faceDown) {
         return (
             <div
                 className={`
-          ${currentSize.width} ${currentSize.height}
-          rounded-lg shadow-lg
-          bg-gradient-to-br from-blue-800 to-blue-900
-          border-2 border-blue-700
+          ${s.w} ${s.h}
+          rounded-xl shadow-lg
+          bg-gradient-to-br from-[#1a2555] to-[#0f1a45]
+          border-2 border-white/10
           flex items-center justify-center
           transition-transform duration-200
-          hover:translate-y-[-4px] hover:shadow-xl
-          ${animate ? 'card-flip' : ''}
+          hover:translate-y-[-4px]
+          ${animate ? 'animate-card-deal' : ''}
           ${className}
         `}
             >
-                <div className="text-blue-400 text-4xl opacity-30">✦</div>
+                <div className="text-3xl text-[var(--rb-primary)]/30">♠</div>
             </div>
         );
     }
@@ -113,59 +97,43 @@ export function Card({
     return (
         <div
             className={`
-        ${currentSize.width} ${currentSize.height}
-        rounded-lg shadow-lg
-        bg-gradient-to-br from-white to-gray-100
-        border border-gray-300
-        flex flex-col
+        ${s.w} ${s.h}
+        rounded-xl shadow-lg
+        bg-gradient-to-b from-white to-gray-100
+        border border-gray-200
+        flex flex-col justify-between
         transition-transform duration-200
-        hover:translate-y-[-4px] hover:shadow-xl
+        hover:translate-y-[-4px]
         relative overflow-hidden
-        ${animate ? 'card-flip' : ''}
+        ${animate ? 'animate-card-deal' : ''}
         ${className}
       `}
         >
-            {/* Top-left rank and suit */}
-            <div
-                className={`
-          ${currentSize.padding}
-          font-bold leading-none
-          ${isRed ? 'text-red-500' : 'text-gray-900'}
-        `}
-            >
-                <div className={currentSize.fontSize}>{rank}</div>
-                <div className={currentSize.fontSize}>{suit}</div>
+            {/* Top left */}
+            <div className={`${s.p} leading-none ${isRed ? 'text-red-500' : 'text-gray-900'}`}>
+                <div className={`${s.text} font-bold`}>{rank}</div>
+                <div className={`${s.text}`}>{suit}</div>
             </div>
 
             {/* Center suit */}
-            <div className="flex-1 flex items-center justify-center">
-                <span
-                    className={`
-            ${size === 'lg' ? 'text-5xl' : size === 'md' ? 'text-3xl' : 'text-2xl'}
-            ${isRed ? 'text-red-500' : 'text-gray-900'}
-          `}
-                >
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <span className={`${s.center} ${isRed ? 'text-red-500' : 'text-gray-900'}`}>
                     {suit}
                 </span>
             </div>
 
-            {/* Bottom-right rank and suit (inverted) */}
+            {/* Bottom right (rotated) */}
             <div
-                className={`
-          ${currentSize.padding}
-          font-bold leading-none
-          ${isRed ? 'text-red-500' : 'text-gray-900'}
-          self-end rotate-180
-        `}
+                className={`${s.p} leading-none ${isRed ? 'text-red-500' : 'text-gray-900'} self-end rotate-180`}
             >
-                <div className={currentSize.fontSize}>{rank}</div>
-                <div className={currentSize.fontSize}>{suit}</div>
+                <div className={`${s.text} font-bold`}>{rank}</div>
+                <div className={`${s.text}`}>{suit}</div>
             </div>
         </div>
     );
 }
 
-// Card stack for displaying multiple cards with overlap
+// Card stack for multiple cards with overlap
 interface CardStackProps {
     cards: string[];
     size?: 'sm' | 'md' | 'lg';
@@ -181,7 +149,7 @@ export function CardStack({
 }: CardStackProps) {
     if (cards.length === 0) {
         return (
-            <div className={`flex items-center justify-center text-gray-500 ${className}`}>
+            <div className={`flex items-center justify-center text-[var(--rb-text-dim)] ${className}`}>
                 No cards
             </div>
         );
@@ -195,11 +163,7 @@ export function CardStack({
                     style={{ marginLeft: index === 0 ? 0 : -overlap }}
                     className="transition-all duration-200 hover:z-10"
                 >
-                    <Card
-                        card={card}
-                        size={size}
-                        animate={index === cards.length - 1}
-                    />
+                    <Card card={card} size={size} animate={index === cards.length - 1} />
                 </div>
             ))}
         </div>
