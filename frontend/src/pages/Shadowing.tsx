@@ -2,19 +2,22 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '../context/GameContext';
 import { Card } from '../components/Card';
+import { CardInputGrid } from '../components/CardInputGrid';
+import { HandFlowController } from '../components/HandFlowController';
 import type { DecisionResponse } from '../lib/api';
 import {
     Shuffle,
     Send,
     Trash2,
-    Target,
     AlertTriangle,
     DoorOpen,
     X,
     AlertCircle,
+    Zap,
+    List,
 } from 'lucide-react';
 
-// Card ranks and suits
+// Card ranks and suits for manual mode
 const RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K'];
 const SUITS = [
     { symbol: '♠', color: 'text-[var(--rb-text)]' },
@@ -23,8 +26,12 @@ const SUITS = [
     { symbol: '♣', color: 'text-[var(--rb-text)]' },
 ];
 
+type InputMode = 'flow' | 'manual';
+
 /**
- * Shadowing page - MANUAL mode with casino-style interface
+ * Shadowing page - MANUAL mode with two input interfaces:
+ * 1. Flow Mode (default): Guided step-by-step card input with HandFlowController
+ * 2. Manual Mode: Free-form card observation with CardInputGrid
  */
 export function Shadowing() {
     const navigate = useNavigate();
@@ -37,17 +44,12 @@ export function Shadowing() {
         clearExit,
     } = useGame();
 
-    // Card input state
+    // UI mode: 'flow' for guided hand input, 'manual' for free observation
+    const [inputMode, setInputMode] = useState<InputMode>('flow');
+
+    // Manual mode state
     const [selectedRank, setSelectedRank] = useState<string | null>(null);
     const [pendingCards, setPendingCards] = useState<string[]>([]);
-
-    // Decision state
-    const [playerHand, setPlayerHand] = useState<string[]>([]);
-    const [dealerUpcard, setDealerUpcard] = useState<string | null>(null);
-    const [selectingFor, setSelectingFor] = useState<'observe' | 'player' | 'dealer'>(
-        'observe'
-    );
-    const [recommendation, setRecommendation] = useState<DecisionResponse | null>(null);
 
     // Redirect if no session
     useEffect(() => {
@@ -56,26 +58,17 @@ export function Shadowing() {
         }
     }, [state.sessionId, state.gameMode, navigate]);
 
-    // Handle card selection
+    // Handle card selection (manual mode - legacy)
     const handleCardSelect = (suit: string) => {
         if (!selectedRank) return;
-
         const card = `${selectedRank}${suit}`;
-
-        switch (selectingFor) {
-            case 'observe':
-                setPendingCards([...pendingCards, card]);
-                break;
-            case 'player':
-                setPlayerHand([...playerHand, card]);
-                break;
-            case 'dealer':
-                setDealerUpcard(card);
-                setSelectingFor('observe');
-                break;
-        }
-
+        setPendingCards([...pendingCards, card]);
         setSelectedRank(null);
+    };
+
+    // Handle card from CardInputGrid (manual observe mode)
+    const handleQuickCardInput = async (card: string) => {
+        setPendingCards(prev => [...prev, card]);
     };
 
     // Submit observed cards
@@ -85,27 +78,10 @@ export function Shadowing() {
         setPendingCards([]);
     };
 
-    // Get decision
-    const handleGetDecision = async () => {
-        if (playerHand.length < 2 || !dealerUpcard) return;
-        const result = await getRecommendation(playerHand, dealerUpcard);
-        if (result) {
-            setRecommendation(result);
-        }
-    };
-
-    // Clear hand
-    const handleClearHand = () => {
-        setPlayerHand([]);
-        setDealerUpcard(null);
-        setRecommendation(null);
-    };
-
     // Handle shuffle
     const handleShuffle = async () => {
         await shuffleDeck();
         setPendingCards([]);
-        handleClearHand();
     };
 
     // Handle leaving
@@ -114,8 +90,18 @@ export function Shadowing() {
         navigate('/');
     };
 
+    // Wrapper for flow controller - submit single card to count
+    const handleCardObserved = async (card: string) => {
+        await submitCards([card]);
+    };
+
+    // Wrapper for flow controller - get decision
+    const handleGetDecision = async (playerCards: string[], dealerCard: string): Promise<DecisionResponse | null> => {
+        return await getRecommendation(playerCards, dealerCard);
+    };
+
     return (
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-4xl mx-auto">
             {/* Exit Warning */}
             {state.shouldExit && state.exitReason && (
                 <div className="exit-warning mb-6 animate-fade-in">
@@ -193,110 +179,95 @@ export function Shadowing() {
                 </div>
             </div>
 
-            <div className="grid lg:grid-cols-2 gap-6">
-                {/* Card Input Panel */}
-                <div className="game-frame">
-                    <div className="game-frame-header">
-                        <div>
-                            <h2 className="text-lg font-bold text-[var(--rb-text)]">Card Input</h2>
-                            <p className="text-sm text-[var(--rb-text-muted)]">
-                                Tap rank, then suit to add cards
-                            </p>
-                        </div>
-                    </div>
+            {/* Mode Toggle */}
+            <div className="flex items-center justify-center gap-2 mb-6 p-1 rounded-xl bg-slate-800/50">
+                <button
+                    onClick={() => setInputMode('flow')}
+                    className={`
+                        flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg font-medium text-sm
+                        transition-all duration-200
+                        ${inputMode === 'flow'
+                            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                            : 'text-slate-400 hover:text-slate-300 hover:bg-slate-700/50'
+                        }
+                    `}
+                >
+                    <Zap className="w-4 h-4" />
+                    Auto-Flow
+                </button>
+                <button
+                    onClick={() => setInputMode('manual')}
+                    className={`
+                        flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg font-medium text-sm
+                        transition-all duration-200
+                        ${inputMode === 'manual'
+                            ? 'bg-slate-600/50 text-slate-200 border border-slate-500/30'
+                            : 'text-slate-400 hover:text-slate-300 hover:bg-slate-700/50'
+                        }
+                    `}
+                >
+                    <List className="w-4 h-4" />
+                    Observe Mode
+                </button>
+            </div>
 
-                    <div className="p-6">
-                        {/* Input mode tabs */}
-                        <div className="flex gap-2 mb-6 p-1 rounded-lg bg-[var(--rb-bg)]">
-                            {[
-                                { key: 'observe', label: 'Observe', color: 'var(--rb-primary)' },
-                                { key: 'player', label: 'Your Hand', color: 'var(--rb-green)' },
-                                { key: 'dealer', label: 'Dealer', color: 'var(--rb-amber)' },
-                            ].map((tab) => (
-                                <button
-                                    key={tab.key}
-                                    onClick={() => setSelectingFor(tab.key as typeof selectingFor)}
-                                    className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-all ${selectingFor === tab.key
-                                        ? 'bg-[var(--rb-surface)] text-[var(--rb-text)]'
-                                        : 'text-[var(--rb-text-muted)] hover:text-[var(--rb-text)]'
-                                        }`}
-                                    style={{
-                                        borderLeft:
-                                            selectingFor === tab.key ? `3px solid ${tab.color}` : 'none',
-                                    }}
-                                >
-                                    {tab.label}
-                                </button>
-                            ))}
-                        </div>
+            {/* Main Content */}
+            <div className="game-frame">
+                <div className="p-6">
+                    {/* Auto-Flow Mode */}
+                    {inputMode === 'flow' && (
+                        <HandFlowController
+                            onCardObserved={handleCardObserved}
+                            onGetDecision={handleGetDecision}
+                            trueCount={state.trueCount}
+                            runningCount={state.runningCount}
+                            recommendedBet={state.recommendedBet}
+                            shouldExit={state.shouldExit}
+                            exitReason={state.exitReason}
+                            isLoading={state.isLoading}
+                        />
+                    )}
 
-                        {/* Rank selector */}
-                        <div className="mb-4">
-                            <div className="text-xs text-[var(--rb-text-muted)] mb-2 uppercase tracking-wider">
-                                Select Rank
+                    {/* Manual Observe Mode */}
+                    {inputMode === 'manual' && (
+                        <div className="space-y-6">
+                            <div className="text-center mb-4">
+                                <h3 className="text-lg font-semibold text-slate-200">Observe Cards</h3>
+                                <p className="text-sm text-slate-500">
+                                    Quickly input any cards you see at the table
+                                </p>
                             </div>
-                            <div className="flex flex-wrap gap-2">
-                                {RANKS.map((rank) => (
-                                    <button
-                                        key={rank}
-                                        onClick={() => setSelectedRank(rank)}
-                                        className={`w-10 h-10 rounded-lg font-bold text-lg transition-all ${selectedRank === rank
-                                            ? 'bg-[var(--rb-primary)] text-white scale-110'
-                                            : 'bg-[var(--rb-bg)] text-[var(--rb-text)] hover:bg-[var(--rb-surface-hover)]'
-                                            }`}
-                                    >
-                                        {rank}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
 
-                        {/* Suit selector */}
-                        <div className="mb-6">
-                            <div className="text-xs text-[var(--rb-text-muted)] mb-2 uppercase tracking-wider">
-                                {selectedRank ? `Select Suit for ${selectedRank}` : 'Select a rank first'}
-                            </div>
-                            <div className="flex gap-3">
-                                {SUITS.map((suit) => (
-                                    <button
-                                        key={suit.symbol}
-                                        onClick={() => handleCardSelect(suit.symbol)}
-                                        disabled={!selectedRank}
-                                        className={`flex-1 py-4 rounded-lg text-3xl transition-all ${!selectedRank
-                                            ? 'bg-[var(--rb-bg)] opacity-50 cursor-not-allowed'
-                                            : `bg-[var(--rb-bg)] hover:bg-[var(--rb-surface-hover)] hover:scale-105 ${suit.color}`
-                                            }`}
-                                    >
-                                        {suit.symbol}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
+                            {/* Quick Input Grid */}
+                            <CardInputGrid
+                                onCardSelect={handleQuickCardInput}
+                                prompt="Tap rank, slide for suit"
+                                disabled={state.isLoading}
+                            />
 
-                        {/* Pending cards (observe mode) */}
-                        {selectingFor === 'observe' && (
-                            <div className="border-t border-[var(--rb-border)] pt-4">
+                            {/* Pending Cards */}
+                            <div className="border-t border-slate-700 pt-4">
                                 <div className="flex items-center justify-between mb-2">
-                                    <span className="text-xs text-[var(--rb-text-muted)] uppercase">
-                                        Cards to Submit
+                                    <span className="text-xs text-slate-500 uppercase tracking-wider">
+                                        Cards to Submit ({pendingCards.length})
                                     </span>
                                     {pendingCards.length > 0 && (
                                         <button
                                             onClick={() => setPendingCards([])}
-                                            className="text-xs text-[var(--rb-red)] hover:text-[var(--rb-red-hover)] flex items-center gap-1"
+                                            className="text-xs text-red-400 hover:text-red-300 flex items-center gap-1"
                                         >
                                             <Trash2 className="w-3 h-3" />
                                             Clear
                                         </button>
                                     )}
                                 </div>
-                                <div className="flex flex-wrap gap-2 min-h-[48px] p-3 rounded-lg bg-[var(--rb-bg)]">
+                                <div className="flex flex-wrap gap-2 min-h-[64px] p-3 rounded-xl bg-slate-800/50 border border-slate-700">
                                     {pendingCards.length > 0 ? (
                                         pendingCards.map((card, i) => (
                                             <Card key={`${card}-${i}`} card={card} size="sm" />
                                         ))
                                     ) : (
-                                        <span className="text-[var(--rb-text-dim)] text-sm">
+                                        <span className="text-slate-600 text-sm self-center">
                                             No cards selected
                                         </span>
                                     )}
@@ -304,169 +275,106 @@ export function Shadowing() {
                                 <button
                                     onClick={handleSubmitCards}
                                     disabled={pendingCards.length === 0 || state.isLoading}
-                                    className="rb-btn rb-btn-primary w-full mt-3"
+                                    className={`
+                                        w-full mt-3 py-3 rounded-xl font-semibold
+                                        flex items-center justify-center gap-2
+                                        transition-all duration-200
+                                        ${pendingCards.length > 0
+                                            ? 'bg-emerald-500 hover:bg-emerald-400 text-white'
+                                            : 'bg-slate-800 text-slate-600 cursor-not-allowed'
+                                        }
+                                    `}
                                 >
                                     <Send className="w-4 h-4" />
                                     Submit Cards ({pendingCards.length})
                                 </button>
                             </div>
-                        )}
-                    </div>
-                </div>
 
-                {/* Decision Panel */}
-                <div className="game-frame">
-                    <div className="game-frame-header">
-                        <div>
-                            <h2 className="text-lg font-bold text-[var(--rb-text)]">
-                                Get Recommendation
-                            </h2>
-                            <p className="text-sm text-[var(--rb-text-muted)]">
-                                Enter your hand and dealer's upcard
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="p-6">
-                        {/* Your hand */}
-                        <div className="mb-4">
-                            <div className="flex items-center justify-between mb-2">
-                                <span className="text-xs text-[var(--rb-text-muted)] uppercase">
-                                    Your Hand
-                                </span>
-                                {playerHand.length > 0 && (
-                                    <button
-                                        onClick={() => setPlayerHand([])}
-                                        className="text-xs text-[var(--rb-red)]"
-                                    >
-                                        Clear
-                                    </button>
-                                )}
-                            </div>
-                            <div className="flex gap-2 min-h-[80px] p-3 rounded-lg bg-[var(--rb-bg)] border border-[var(--rb-border)]">
-                                {playerHand.length > 0 ? (
-                                    playerHand.map((card, i) => (
-                                        <Card key={`player-${card}-${i}`} card={card} size="sm" />
-                                    ))
-                                ) : (
-                                    <span className="text-[var(--rb-text-dim)] text-sm self-center">
-                                        Select "Your Hand" tab, then pick cards
-                                    </span>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Dealer upcard */}
-                        <div className="mb-6">
-                            <div className="flex items-center justify-between mb-2">
-                                <span className="text-xs text-[var(--rb-text-muted)] uppercase">
-                                    Dealer Upcard
-                                </span>
-                                {dealerUpcard && (
-                                    <button
-                                        onClick={() => setDealerUpcard(null)}
-                                        className="text-xs text-[var(--rb-red)]"
-                                    >
-                                        Clear
-                                    </button>
-                                )}
-                            </div>
-                            <div className="flex gap-2 min-h-[80px] p-3 rounded-lg bg-[var(--rb-bg)] border border-[var(--rb-border)]">
-                                {dealerUpcard ? (
-                                    <Card card={dealerUpcard} size="sm" />
-                                ) : (
-                                    <span className="text-[var(--rb-text-dim)] text-sm self-center">
-                                        Select "Dealer" tab, then pick a card
-                                    </span>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Action buttons */}
-                        <div className="flex gap-3">
-                            <button
-                                onClick={handleGetDecision}
-                                disabled={playerHand.length < 2 || !dealerUpcard || state.isLoading}
-                                className="rb-btn rb-btn-green flex-1"
-                            >
-                                <Target className="w-4 h-4" />
-                                Get Decision
-                            </button>
-                            <button onClick={handleClearHand} className="rb-btn rb-btn-outline">
-                                <Trash2 className="w-4 h-4" />
-                            </button>
-                        </div>
-
-                        {/* Recommendation result */}
-                        {recommendation && (
-                            <div className="mt-6 p-4 rounded-lg bg-[var(--rb-bg)] border border-[var(--rb-green)]/30 animate-fade-in">
-                                <div className="flex items-center gap-3 mb-3">
-                                    <div className="p-2 rounded-lg bg-[var(--rb-green)]/20">
-                                        <Target className="w-6 h-6 text-[var(--rb-green)]" />
+                            {/* Legacy Rank/Suit Selector (fallback) */}
+                            <details className="group">
+                                <summary className="text-xs text-slate-600 cursor-pointer hover:text-slate-400 flex items-center gap-1">
+                                    <span>↳ Classic input (tap rank, tap suit)</span>
+                                </summary>
+                                <div className="mt-3 p-4 rounded-xl bg-slate-800/30 border border-slate-700/50">
+                                    {/* Rank selector */}
+                                    <div className="mb-4">
+                                        <div className="text-xs text-slate-600 mb-2 uppercase">
+                                            Rank
+                                        </div>
+                                        <div className="flex flex-wrap gap-1.5">
+                                            {RANKS.map((rank) => (
+                                                <button
+                                                    key={rank}
+                                                    onClick={() => setSelectedRank(rank)}
+                                                    className={`w-9 h-9 rounded-lg font-bold text-sm transition-all ${selectedRank === rank
+                                                        ? 'bg-emerald-500 text-white scale-110'
+                                                        : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                                                        }`}
+                                                >
+                                                    {rank}
+                                                </button>
+                                            ))}
+                                        </div>
                                     </div>
+
+                                    {/* Suit selector */}
                                     <div>
-                                        <div className="text-sm text-[var(--rb-text-muted)]">
-                                            Recommended Action
+                                        <div className="text-xs text-slate-600 mb-2 uppercase">
+                                            {selectedRank ? `Suit for ${selectedRank}` : 'Select rank first'}
                                         </div>
-                                        <div className="text-2xl font-bold text-[var(--rb-green)]">
-                                            {recommendation.recommended_action}
+                                        <div className="flex gap-2">
+                                            {SUITS.map((suit) => (
+                                                <button
+                                                    key={suit.symbol}
+                                                    onClick={() => handleCardSelect(suit.symbol)}
+                                                    disabled={!selectedRank}
+                                                    className={`flex-1 py-3 rounded-lg text-2xl transition-all ${!selectedRank
+                                                        ? 'bg-slate-800 opacity-50 cursor-not-allowed'
+                                                        : `bg-slate-700 hover:bg-slate-600 hover:scale-105 ${suit.color}`
+                                                        }`}
+                                                >
+                                                    {suit.symbol}
+                                                </button>
+                                            ))}
                                         </div>
                                     </div>
                                 </div>
-                                <div className="text-sm text-[var(--rb-text-muted)]">
-                                    Hand Total:{' '}
-                                    <span className="text-[var(--rb-text)] font-semibold">
-                                        {recommendation.player_total}
-                                    </span>
-                                </div>
-
-                                {recommendation.should_exit && recommendation.exit_reason && (
-                                    <div className="mt-3 flex items-center gap-2 px-3 py-2 rounded-lg bg-[var(--rb-red)]/10 border border-[var(--rb-red)]/30 text-[var(--rb-red)] text-sm">
-                                        <AlertTriangle className="w-4 h-4" />
-                                        {recommendation.exit_reason}
-                                    </div>
-                                )}
-                            </div>
-                        )}
-                    </div>
+                            </details>
+                        </div>
+                    )}
                 </div>
             </div>
 
             {/* Error display */}
             {state.error && (
-                <div className="mt-6 p-4 rounded-lg bg-[var(--rb-red)]/10 border border-[var(--rb-red)]/30 flex items-center gap-3 text-[var(--rb-red)]">
+                <div className="mt-6 p-4 rounded-lg bg-red-500/10 border border-red-500/30 flex items-center gap-3 text-red-400">
                     <AlertCircle className="w-5 h-5" />
                     <span>{state.error}</span>
                 </div>
             )}
 
-            {/* Quick Guide */}
-            <div className="mt-6 rb-surface p-6">
-                <h4 className="font-semibold text-[var(--rb-text)] mb-4">Quick Guide</h4>
-                <div className="grid md:grid-cols-3 gap-4 text-sm">
-                    <div className="p-4 rounded-lg bg-[var(--rb-bg)]">
-                        <div className="font-semibold text-[var(--rb-primary)] mb-2">
-                            1. Observe Cards
-                        </div>
-                        <p className="text-[var(--rb-text-muted)]">
-                            Input any cards you see dealt at the table to update the running count.
-                        </p>
+            {/* Quick Tips */}
+            <div className="mt-6 p-4 rounded-xl bg-slate-800/30 border border-slate-700/50">
+                <div className="flex items-center gap-2 mb-3">
+                    <Zap className="w-4 h-4 text-emerald-400" />
+                    <span className="text-sm font-medium text-slate-300">Speed Tips</span>
+                </div>
+                <div className="grid md:grid-cols-2 gap-3 text-xs text-slate-500">
+                    <div className="flex items-start gap-2">
+                        <span className="text-emerald-400">•</span>
+                        <span><strong>Auto-Flow:</strong> Guided hand-by-hand input with instant decisions</span>
                     </div>
-                    <div className="p-4 rounded-lg bg-[var(--rb-bg)]">
-                        <div className="font-semibold text-[var(--rb-green)] mb-2">
-                            2. Your Hand
-                        </div>
-                        <p className="text-[var(--rb-text-muted)]">
-                            When it's your turn, input your cards and the dealer's upcard.
-                        </p>
+                    <div className="flex items-start gap-2">
+                        <span className="text-slate-400">•</span>
+                        <span><strong>Observe Mode:</strong> Quickly log cards you see dealt to others</span>
                     </div>
-                    <div className="p-4 rounded-lg bg-[var(--rb-bg)]">
-                        <div className="font-semibold text-[var(--rb-amber)] mb-2">
-                            3. Get Decision
-                        </div>
-                        <p className="text-[var(--rb-text-muted)]">
-                            Receive the optimal play based on basic strategy and current count.
-                        </p>
+                    <div className="flex items-start gap-2">
+                        <span className="text-blue-400">•</span>
+                        <span><strong>Swipe Input:</strong> Tap rank → slide UP(♠) RIGHT(♥) DOWN(♣) LEFT(♦)</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                        <span className="text-amber-400">•</span>
+                        <span><strong>New Shoe:</strong> Tap when dealer shuffles to reset count</span>
                     </div>
                 </div>
             </div>
